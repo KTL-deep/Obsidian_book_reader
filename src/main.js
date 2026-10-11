@@ -344,6 +344,10 @@ Object.assign(__erEN, {
     "The scrollbar is visible on light themes, not only on dark ones",
   "Переход по сноске в режиме «прокруткой» ведёт к сноске, а не в начало книги":
     "In scrolling mode a footnote link now leads to the footnote instead of the start of the book",
+  "Заголовок главы над цитатами":
+    "Chapter heading above quotes",
+  "При выгрузке цитаты группируются по главе книги, и над группой пишется её название. Выключите, если главы короткие и совпадают почти у каждой цитаты.":
+    "Exported quotes are grouped by the book's chapter, with the chapter name printed above the group. Turn off if chapters are short and keep coinciding on almost every quote.",
 });
 // Module-scope, not a global. It was on globalThis/window, which the popout
 // guidance rightly flags — but the honest fix is that a module's own setting
@@ -531,6 +535,10 @@ const DEFAULT = {
   quoteBacklinks: true,
   // Подпись этой ссылки. Пусто — берётся стандартная на языке интерфейса.
   quoteBacklinkLabel: "",
+  // Заголовок главы над группой цитат при выгрузке в заметку. Выключают,
+  // когда главы в книге короткие и совпадают почти у каждой цитаты —
+  // жалоба из issue #13 («главы даже совпадают»).
+  quoteChapterHeadings: true,
   noteOpenMode: "split",
   // Widest a single reading column may get, in characters. A full-width column
   // on a wide monitor runs to 150+ characters, and the eye loses the start of
@@ -6033,7 +6041,8 @@ async function exportHighlightsToBookNote(app, plugin, bookFile, highlights) {
     return;
   }
   const heading = __ertr("## Цитаты");
-  const block = groups.map((g) => (g.chapter ? `**${g.chapter}**
+  const showChapters = plugin.settings.quoteChapterHeadings !== false;
+  const block = groups.map((g) => (g.chapter && showChapters ? `**${g.chapter}**
 
 ` : "") + g.lines.join("\n\n")).join("\n\n");
   let targetLine = 0;
@@ -10058,6 +10067,13 @@ const SettingsTab = class extends PluginSettingTab {
           this.plugin.settings.quoteBacklinkLabel = v;
           await this.plugin.saveAll();
         }));
+    new Setting(c)
+      .setName(__ertr("Заголовок главы над цитатами"))
+      .setDesc(__ertr("При выгрузке цитаты группируются по главе книги, и над группой пишется её название. Выключите, если главы короткие и совпадают почти у каждой цитаты."))
+      .addToggle((t) => t.setValue(this.plugin.settings.quoteChapterHeadings !== false).onChange(async (v) => {
+        this.plugin.settings.quoteChapterHeadings = v;
+        await this.plugin.saveAll();
+      }));
     new Setting(c)
       .setName(__ertr("Сохранять цвет выделений при экспорте"))
       .setDesc(__ertr("Каждая цитата оборачивается в цветной <mark> — цвет выделения виден в готовой заметке (в режиме чтения и live preview, без плагинов). Выключите, если хотите обычные цитаты без HTML."))
