@@ -2,7 +2,7 @@ name: Build Book Reader Custom
 
 on:
   push:
-    branches: [feat/book-reader-custom, feat/pdf-extraction-cache]
+    branches: [main, feat/pdf-extraction-cache]
   workflow_dispatch:
 
 permissions:
