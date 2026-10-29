@@ -25,7 +25,7 @@ function quoteBlock(bookPath, hl) {
   const id = String(hl.id);
   const text = String(hl.text || "").replace(/\s+/g, " ").trim();
   const escaped = text.replace(/^/gm, "> ");
-  const link = "obsidian://elton-reader?book=" + encodeURIComponent(bookPath) + "&block=" + encodeURIComponent(hl.block ?? 0);
+  const link = "obsidian://ktl-book-reader?book=" + encodeURIComponent(bookPath) + "&block=" + encodeURIComponent(hl.block ?? 0);
   const comment = String(hl.comment || "").trim();
   return [
     "<!-- br:annotation id=" + id + " -->",

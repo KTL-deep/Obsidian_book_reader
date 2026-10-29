@@ -1,8 +1,8 @@
-name: Build Android test plugin
+name: Build Book Reader Custom
 
 on:
   push:
-    branches: [feat/book-reader-custom]
+    branches: [main, feat/pdf-extraction-cache]
   workflow_dispatch:
 
 permissions:
@@ -23,18 +23,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Unit tests
-        run: node --test tests/pdf-reflow.test.js tests/book-note-sync.test.js
+        run: node --test tests/*.test.js
       - name: Build
         run: npm run build
       - name: Prepare installation package
         run: |
-          mkdir -p dist/book-reader-test
-          cp main.js manifest.json styles.css dist/book-reader-test/
+          mkdir -p dist/ktl-book-reader
+          cp main.js manifest.json styles.css dist/ktl-book-reader/
           cd dist
-          zip -r book-reader-test-android.zip book-reader-test
+          zip -r ktl-book-reader-android.zip ktl-book-reader
       - name: Upload Android install files
         uses: actions/upload-artifact@v4
         with:
-          name: book-reader-test-android
-          path: dist/book-reader-test-android.zip
+          name: ktl-book-reader-android
+          path: dist/ktl-book-reader-android.zip
           if-no-files-found: error
