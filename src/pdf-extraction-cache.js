@@ -11,7 +11,7 @@ function hashPath(s) {
   return (h >>> 0).toString(16).padStart(8, "0");
 }
 function cacheRoot(app) {
-  return (app.vault.configDir || ".obsidian") + "/plugins/elton-reader-books/pdf-cache";
+  return (app.vault.configDir || ".obsidian") + "/plugins/ktl-book-reader/pdf-cache";
 }
 export function pdfCacheDescriptor(file, settings = {}) {
   return {
