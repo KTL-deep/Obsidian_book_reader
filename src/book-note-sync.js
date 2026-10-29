@@ -116,7 +116,7 @@ export async function readBookNoteComment(app, file, id, folder = "Book Notes") 
 
 export async function findExistingBookNote(app, file, folder = "Book Notes") {
   if (!file?.path) return null;
-  const dir = String(folder || "").replace(/^\\/+|\\/+$/g, "");
+  const dir = String(folder || "").split("/").filter(Boolean).join("/");
   const base = safeName(file.basename);
   const marker = "<!-- br:book " + file.path + " -->";
   for (const name of [base + ".md", base + " — " + safeName(file.extension || "book") + ".md"]) {
