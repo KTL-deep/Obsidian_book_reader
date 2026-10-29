@@ -1,0 +1,40 @@
+name: Build Android test plugin
+
+on:
+  push:
+    branches: [feat/book-reader-custom]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Unit tests
+        run: node --test tests/pdf-reflow.test.js tests/book-note-sync.test.js
+      - name: Build
+        run: npm run build
+      - name: Prepare installation package
+        run: |
+          mkdir -p dist/book-reader-test
+          cp main.js manifest.json styles.css dist/book-reader-test/
+          cd dist
+          zip -r book-reader-test-android.zip book-reader-test
+      - name: Upload Android install files
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-reader-test-android
+          path: dist/book-reader-test-android.zip
+          if-no-files-found: error
