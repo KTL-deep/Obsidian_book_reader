@@ -365,7 +365,7 @@ function __ertr(s){
 
 
 
-const VIEW_TYPE = "elton-reader";
+const VIEW_TYPE = "ktl-book-reader";
 const DEFAULT = {
   // Interface language: "ru" (default) or "en".
   language: "ru",
@@ -1390,7 +1390,7 @@ const EltonReader = class extends Plugin {
     // exact paragraph it came from, so clicking it opens the book there. Using
     // the app's own URI scheme rather than something bespoke means the link
     // works from anywhere a link works — a note, the daily journal, a canvas.
-    this.registerObsidianProtocolHandler("elton-reader", (params) => {
+    this.registerObsidianProtocolHandler("ktl-book-reader", (params) => {
       // `block` for a quote, `page` for a note made from a scanned page — the
       // latter has no paragraph to anchor to.
       this.openBookAt(params.book || "", params.block, params.page);
@@ -3292,7 +3292,7 @@ async function createNoteFromPdfPage(view, pageNo, btn) {
     // A scanned page has no paragraph to anchor to, so the backlink points at
     // the page — still one click from the note back to where it came from.
     const back = plugin.settings.quoteBacklinks !== false
-      ? ` [${backlinkLabel(plugin)}](obsidian://elton-reader?book=${encodeURIComponent(file.path)}&page=${pageNo})`
+      ? ` [${backlinkLabel(plugin)}](obsidian://ktl-book-reader?book=${encodeURIComponent(file.path)}&page=${pageNo})`
       : "";
     const body = `${quote}\n\n${__ertr("— из [[{0}]], стр. {1}", linkName, pageNo)}${back}\n`;
     await resolveNotesFolder(app, folderOverride);
@@ -5129,7 +5129,7 @@ function wrapBlockRange(block, start, end, hl) {
   }
 }
 function _readerSettings(app) {
-  const p = app && app.plugins && app.plugins.plugins ? app.plugins.plugins["elton-reader-books"] : null;
+  const p = app && app.plugins && app.plugins.plugins ? app.plugins.plugins["ktl-book-reader"] : null;
   return p && p.settings || {};
 }
 function noteTemplatePath(app, bookFile) {
@@ -5903,7 +5903,7 @@ function addBookFileMenu(app, menu, file) {
     const tree = explorer.view;
     if (tree && typeof tree.revealInFolder === "function") tree.revealInFolder(file);
   }));
-  app.workspace.trigger("file-menu", menu, file, "elton-reader");
+  app.workspace.trigger("file-menu", menu, file, "ktl-book-reader");
   return menu;
 }
 function deleteBookFromVault(app, plugin, file, after) {
@@ -5944,7 +5944,7 @@ function quoteMarkdown(plugin, hl, bookFile) {
   const page = hl && hl.page ? __ertr(", стр. {0}", hl.page) : "";
   let link = "";
   if (plugin.settings.quoteBacklinks !== false && bookFile && typeof hl.block === "number" && hl.block >= 0) {
-    link = ` [${backlinkLabel(plugin)}](obsidian://elton-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block})`;
+    link = ` [${backlinkLabel(plugin)}](obsidian://ktl-book-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block})`;
   }
   const comment = hl && hl.comment ? `
 >
@@ -6084,7 +6084,7 @@ async function exportHighlightsToBookNote(app, plugin, bookFile, highlights) {
     }
     let where = hl.page ? __ertr(" *(стр. {0})*", hl.page) : "";
     if (plugin.settings.quoteBacklinks !== false && bookFile && typeof hl.block === "number" && hl.block >= 0) {
-      const uri = `obsidian://elton-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block}`;
+      const uri = `obsidian://ktl-book-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block}`;
       where += ` [${backlinkLabel(plugin)}](${uri})`;
     }
     const cmt = hl.comment ? `
