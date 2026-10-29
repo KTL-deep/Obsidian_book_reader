@@ -82,3 +82,60 @@ export async function appendHighlightToBookNote(app, file, hl, folder = "Book No
   if (typeof app.vault.process === "function") await app.vault.process(existingFile, process);
   else await app.vault.modify(existingFile, process(await app.vault.read(existingFile)));
 }
+
+/**
+ * Locate a managed highlight. The user's surrounding Markdown remains untouched.
+ * A comment is the text between the comment heading and the closing marker.
+ */
+export function findAnnotationComment(markdown, id) {
+  const start = "<!-- br:annotation id=" + String(id) + " -->";
+  const begin = markdown.indexOf(start);
+  if (begin < 0) return null;
+  const end = markdown.indexOf("<!-- br:end -->", begin + start.length);
+  if (end < 0) return null;
+  const header = "**Мой комментарий**";
+  const heading = markdown.indexOf(header, begin + start.length);
+  if (heading < 0 || heading >= end) return null;
+  const from = heading + header.length;
+  return { value: markdown.slice(from, end).trim(), from, end };
+}
+
+export function replaceAnnotationComment(markdown, id, value) {
+  const found = findAnnotationComment(markdown, id);
+  if (!found) return markdown;
+  return markdown.slice(0, found.from) + "\n" + String(value || "").trim() + "\n" + markdown.slice(found.end);
+}
+
+export async function readBookNoteComment(app, file, id, folder = "Book Notes") {
+  const note = await findExistingBookNote(app, file, folder);
+  if (!note) return { found: false, comment: "" };
+  const content = await app.vault.read(note);
+  const result = findAnnotationComment(content, id);
+  return result ? { found: true, comment: result.value } : { found: false, comment: "" };
+}
+
+export async function findExistingBookNote(app, file, folder = "Book Notes") {
+  if (!file?.path) return null;
+  const dir = String(folder || "").replace(/^\\/+|\\/+$/g, "");
+  const base = safeName(file.basename);
+  const marker = "<!-- br:book " + file.path + " -->";
+  for (const name of [base + ".md", base + " — " + safeName(file.extension || "book") + ".md"]) {
+    const candidate = app.vault.getAbstractFileByPath(pathJoin(dir, name));
+    if (candidate && (await app.vault.read(candidate)).includes(marker)) return candidate;
+  }
+  return null;
+}
+
+export async function updateBookNoteComment(app, file, id, value, folder = "Book Notes") {
+  const note = await findExistingBookNote(app, file, folder);
+  if (!note) return false;
+  let found = false;
+  const edit = (markdown) => {
+    if (!findAnnotationComment(markdown, id)) return markdown;
+    found = true;
+    return replaceAnnotationComment(markdown, id, value);
+  };
+  if (typeof app.vault.process === "function") await app.vault.process(note, edit);
+  else await app.vault.modify(note, edit(await app.vault.read(note)));
+  return found;
+}
