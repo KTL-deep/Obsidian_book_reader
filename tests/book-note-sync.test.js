@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { appendHighlightToBookNote } from "../src/book-note-sync.js";
+import { appendHighlightToBookNote, readBookNoteComment, updateBookNoteComment } from "../src/book-note-sync.js";
 
 function mockApp() {
   const files = new Map();
@@ -44,4 +44,15 @@ test("will not overwrite unrelated note of same name", async () => {
   await appendHighlightToBookNote(app, book, { id: "h1", text: "Quote" }, "Notes");
   assert.equal(app.files.get("Notes/Novel.md").content, "# My unrelated note");
   assert.ok(app.files.has("Notes/Novel — epub.md"));
+});
+
+test("comments round-trip without changing other quotes", async () => {
+  const app = mockApp();
+  await appendHighlightToBookNote(app, book, { id: "h1", text: "First" }, "Notes");
+  await appendHighlightToBookNote(app, book, { id: "h2", text: "Second" }, "Notes");
+  assert.equal(await updateBookNoteComment(app, book, "h1", "My thought", "Notes"), true);
+  assert.deepEqual(await readBookNoteComment(app, book, "h1", "Notes"), { found: true, comment: "My thought" });
+  assert.deepEqual(await readBookNoteComment(app, book, "h2", "Notes"), { found: true, comment: "" });
+  await updateBookNoteComment(app, book, "h1", "", "Notes");
+  assert.equal((await readBookNoteComment(app, book, "h1", "Notes")).comment, "");
 });
