@@ -50,7 +50,7 @@ export async function savePdfExtractionCache(app, file, settings, result) {
       outline: result.outline,
       figRects: result.figRects,
     });
-    const dst = cacheFile(app, file);
+    const dst = cacheFile(app, file, settings);
     const temp = dst + ".tmp";
     await adapter.write(temp, body);
     // Rename is available on Obsidian filesystem adapters (mobile and desktop).
