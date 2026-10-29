@@ -31,7 +31,7 @@ jobs:
           mkdir -p dist/ktl-book-reader
           cp main.js manifest.json styles.css dist/ktl-book-reader/
           cd dist
-          zip -r ktl-book-reader-android.zip book-reader-test
+          zip -r ktl-book-reader-android.zip ktl-book-reader
       - name: Upload Android install files
         uses: actions/upload-artifact@v4
         with:
