@@ -446,6 +446,8 @@ const DEFAULT = {
   // different reader to see whether they contained pictures at all, which is a
   // much worse failure than an occasional redundant image.
   pdfShowFiguresOnTextPages: true,
+  // PDF reading layout: adaptive text (existing default) or exact source pages.
+  pdfDisplayMode: "reflow",
   // Library cover size = the grid column width in px (cards scale with it). The
   // user can change it live with the −/+ control in the library header.
   libCoverSize: 176,
@@ -3878,6 +3880,11 @@ async function extractPdf(file, app, settings = {}, onProgress) {
     const textHtml = textLen > 0 ? pdfItemsToHtml(tc.items, tc.styles) : "";
     let html = textHtml;
     const brokenText = textLen >= 40 && pdfTextLooksUnreadable(tc.items);
+    // Original PDF mode always renders the source page instead of reflowed text.
+    // Keep lazy rendering and source page anchors used by the existing reader.
+    if (settings.pdfDisplayMode === "original") {
+      html = `<figure class="er-pdf-figure"><img class="er-pdf-page-img er-pdf-lazy" data-pdf-page="${i}" width="${pw}" height="${ph}" alt="">${pdfNoteBtn(i)}</figure>`;
+    } else
     if (textLen < 40 || brokenText) {
       const fig = await pdfFigureScore(page);
       if (brokenText || fig && (fig.imgFrac >= 0.02 || fig.vectorOps >= 20 || fig.shading > 0)) {
@@ -9958,6 +9965,17 @@ const SettingsTab = class extends PluginSettingTab {
         this.plugin.settings.pdfShowFiguresOnTextPages = v;
         await this.plugin.saveAll();
       }));
+    new Setting(c)
+      .setName("Режим PDF")
+      .setDesc("Адаптивный текст под ширину экрана или оригинальные страницы PDF. Откройте книгу заново после изменения.")
+      .addDropdown((d) => d
+        .addOption("reflow", "Адаптивный текст (Reflow)")
+        .addOption("original", "Оригинальные страницы")
+        .setValue(this.plugin.settings.pdfDisplayMode === "original" ? "original" : "reflow")
+        .onChange(async (v) => {
+          this.plugin.settings.pdfDisplayMode = v;
+          await this.plugin.saveAll();
+        }));
     new Setting(c)
       .setName(__ertr("Погружение (Immersive)"))
       .setDesc(__ertr("Панели сверху и снизу мягко притухают через пару секунд без движения мыши и мгновенно возвращаются при движении — чтобы ничто не отвлекало от текста."))
