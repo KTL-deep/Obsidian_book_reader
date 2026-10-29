@@ -2,7 +2,7 @@ name: Build Android test plugin
 
 on:
   push:
-    branches: [feat/book-reader-custom]
+    branches: [feat/book-reader-custom, feat/pdf-extraction-cache]
   workflow_dispatch:
 
 permissions:
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Unit tests
-        run: node --test tests/pdf-reflow.test.js tests/book-note-sync.test.js
+        run: node --test tests/*.test.js
       - name: Build
         run: npm run build
       - name: Prepare installation package
