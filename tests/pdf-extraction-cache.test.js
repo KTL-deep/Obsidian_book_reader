@@ -10,6 +10,7 @@ function fixture() {
     read: async p => { if (!files.has(p)) throw new Error("missing"); return files.get(p); },
     write: async (p, value) => { files.set(p, value); },
     rename: async (from, to) => { files.set(to, files.get(from)); files.delete(from); },
+    remove: async p => { files.delete(p); },
   };
   return { app: { vault: { configDir: ".obsidian", adapter } }, files };
 }
