@@ -23,12 +23,14 @@ export function pdfCacheDescriptor(file, settings = {}) {
     showFigures: settings.pdfShowFiguresOnTextPages === true,
   };
 }
-function cacheFile(app, file) {
-  return cacheRoot(app) + "/" + hashPath(file.path) + ".json";
+function cacheFile(app, file, settings) {
+  const mode = settings.pdfDisplayMode === "original" ? "original" : "reflow";
+  const figures = settings.pdfShowFiguresOnTextPages === true ? "figures" : "text";
+  return cacheRoot(app) + "/" + hashPath(file.path) + "-" + mode + "-" + figures + ".json";
 }
 export async function loadPdfExtractionCache(app, file, settings = {}) {
   try {
-    const data = JSON.parse(await app.vault.adapter.read(cacheFile(app, file)));
+    const data = JSON.parse(await app.vault.adapter.read(cacheFile(app, file, settings)));
     if (JSON.stringify(data?.descriptor) !== JSON.stringify(pdfCacheDescriptor(file, settings))) return null;
     if (typeof data.html !== "string" || !Array.isArray(data.outline) ||
         !data.figRects || typeof data.figRects !== "object") return null;
@@ -52,6 +54,7 @@ export async function savePdfExtractionCache(app, file, settings, result) {
     const temp = dst + ".tmp";
     await adapter.write(temp, body);
     // Rename is available on Obsidian filesystem adapters (mobile and desktop).
+    if (await adapter.exists(dst)) await adapter.remove(dst);
     await adapter.rename(temp, dst);
   } catch (err) {
     console.warn("Book Reader: PDF cache write failed; normal reading continues", err);
